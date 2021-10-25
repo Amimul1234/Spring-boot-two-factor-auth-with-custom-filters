@@ -36,6 +36,8 @@ public class TokenAuthFilter extends OncePerRequestFilter {
 
         TokenAuth tokenAuth = new TokenAuth(token, null);
         Authentication authentication = authenticationManager.authenticate(tokenAuth);
+
+        //This is where we set full auth to security context. This is where authorization begins
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);

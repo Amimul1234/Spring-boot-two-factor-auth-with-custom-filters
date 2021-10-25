@@ -23,6 +23,7 @@ public class TokenAuthProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate( Authentication authentication ) throws AuthenticationException {
+
         String token = authentication.getName();
         boolean exists = tokenManager.contains(token);
 
