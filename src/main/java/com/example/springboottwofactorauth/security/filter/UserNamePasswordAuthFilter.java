@@ -4,10 +4,11 @@ import com.example.springboottwofactorauth.entities.Otp;
 import com.example.springboottwofactorauth.repos.OtpRepo;
 import com.example.springboottwofactorauth.security.authentication.OtpAuth;
 import com.example.springboottwofactorauth.security.authentication.UserNamePasswordAuth;
+import com.example.springboottwofactorauth.security.manager.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -23,11 +24,17 @@ import java.util.UUID;
  * @Project spring-security-c1
  */
 
-@Component
+@Configuration
 public class UserNamePasswordAuthFilter extends OncePerRequestFilter {
 
+    @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
     private OtpRepo otpRepo;
+
+    @Autowired
+    private TokenManager tokenManager;
 
     @Override
     protected void doFilterInternal( HttpServletRequest request, HttpServletResponse response,
@@ -42,9 +49,8 @@ public class UserNamePasswordAuthFilter extends OncePerRequestFilter {
         if (otp == null) {
 
             //step 1
-            var a = new UserNamePasswordAuth(userName, password);
+            Authentication a = new UserNamePasswordAuth(userName, password);
             Authentication authenticate = authenticationManager.authenticate(a);
-
 
             //We generate an otp
             Otp otpEntity = new Otp();
@@ -53,24 +59,19 @@ public class UserNamePasswordAuthFilter extends OncePerRequestFilter {
             otpEntity.setOtp(String.valueOf(new Random().nextInt(9999) + 1000));
             otpRepo.save(otpEntity);
         } else {
-            var a = new OtpAuth(userName, otp);
-            Authentication authenticate = authenticationManager.authenticate(a);
-            response.setHeader("Authorization", UUID.randomUUID().toString());
+            //OtpAuth is a class that extends authentication contract
+            Authentication a = new OtpAuth(userName, otp);
+            a = authenticationManager.authenticate(a);
+
+            //Issue a token to user
+            var tok = UUID.randomUUID().toString();
+            tokenManager.add(tok);
+            response.setHeader("Authorization", tok);
         }
     }
 
     @Override
     protected boolean shouldNotFilter( HttpServletRequest request ) throws ServletException {
         return !request.getServletPath().equals("/login");
-    }
-
-    @Autowired
-    public void setAuthenticationManager( AuthenticationManager authenticationManager ) {
-        this.authenticationManager = authenticationManager;
-    }
-
-    @Autowired
-    public void setOtpRepo( OtpRepo otpRepo ) {
-        this.otpRepo = otpRepo;
     }
 }

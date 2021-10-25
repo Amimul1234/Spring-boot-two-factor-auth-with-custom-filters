@@ -1,5 +1,6 @@
 package com.example.springboottwofactorauth.security.providers;
 
+import com.example.springboottwofactorauth.entities.Otp;
 import com.example.springboottwofactorauth.repos.OtpRepo;
 import com.example.springboottwofactorauth.security.authentication.OtpAuth;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -9,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @Author Amimul Ehsan
@@ -31,13 +33,11 @@ public class OtpAuthProvider implements AuthenticationProvider {
         String userName = authentication.getName();
         String otp = (String) authentication.getCredentials();
 
-        var o = otpRepo.findOtpByUserName(userName);
+        Optional<Otp> otpOptional = otpRepo.findOtpByUserName(userName);
 
-        if (o.isPresent()) {
-            return new OtpAuth(userName, otp, List.of(() -> "read"));
-        }
+        Otp otp1 = otpOptional.orElseThrow(() -> new BadCredentialsException("Error!"));
 
-        throw new BadCredentialsException("Error!");
+        return new OtpAuth(userName, otp1, List.of(() -> "read"));
     }
 
     @Override

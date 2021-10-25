@@ -7,18 +7,18 @@ import java.util.Collection;
 
 /**
  * @Author Amimul Ehsan
- * @Created at 10/24/21
- * @Project spring-security-c1
+ * @Created at 10/25/21
+ * @Project Spring boot two factor auth
  */
 
 
-public class OtpAuth extends UsernamePasswordAuthenticationToken {
+public class TokenAuth extends UsernamePasswordAuthenticationToken {
 
-    public OtpAuth( Object principal, Object credentials ) {
+    public TokenAuth( Object principal, Object credentials ) {
         super(principal, credentials);
     }
 
-    public OtpAuth( Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities ) {
+    public TokenAuth( Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities ) {
         super(principal, credentials, authorities);
     }
 }

@@ -1,8 +1,11 @@
 package com.example.springboottwofactorauth.config;
 
+import com.example.springboottwofactorauth.security.filter.TokenAuthFilter;
 import com.example.springboottwofactorauth.security.filter.UserNamePasswordAuthFilter;
 import com.example.springboottwofactorauth.security.providers.OtpAuthProvider;
+import com.example.springboottwofactorauth.security.providers.TokenAuthProvider;
 import com.example.springboottwofactorauth.security.providers.UserNamePasswordAuthProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +27,19 @@ public class ProjectConfig extends WebSecurityConfigurerAdapter {
 
     private final OtpAuthProvider otpAuthProvider;
 
-    public ProjectConfig( OtpAuthProvider otpAuthProvider, UserNamePasswordAuthFilter userNamePasswordAuthFilter ) {
+    @Autowired
+    private TokenAuthProvider tokenAuthProvider;
+
+    @Autowired
+    private TokenAuthFilter tokenAuthFilter;
+
+    @Autowired
+    private UserNamePasswordAuthProvider userNamePasswordAuthProvider;
+
+    @Autowired
+    private UserNamePasswordAuthFilter userNamePasswordAuthFilter;
+
+    public ProjectConfig( OtpAuthProvider otpAuthProvider ) {
         this.otpAuthProvider = otpAuthProvider;
     }
 
@@ -37,23 +52,20 @@ public class ProjectConfig extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
-        return authenticationManager();
+        return super.authenticationManagerBean();
     }
 
     @Override
     protected void configure( AuthenticationManagerBuilder auth ) {
-
-        var userPassProvider = new UserNamePasswordAuthProvider();
-
-        auth.authenticationProvider(userPassProvider)
-                .authenticationProvider(otpAuthProvider);
+        auth.authenticationProvider(userNamePasswordAuthProvider)
+                .authenticationProvider(otpAuthProvider)
+                .authenticationProvider(tokenAuthProvider);
     }
 
     @Override
     protected void configure( HttpSecurity http ) {
-        var filter = new UserNamePasswordAuthFilter();
-
         http
-                .addFilterAt(filter, BasicAuthenticationFilter.class);
+                .addFilterAt(userNamePasswordAuthFilter, BasicAuthenticationFilter.class)
+                .addFilterAfter(tokenAuthFilter, BasicAuthenticationFilter.class);
     }
 }
