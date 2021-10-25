@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * @Author Amimul Ehsan
  * @Created at 10/24/21
@@ -19,13 +21,13 @@ public class HelloController {
     //Testing with async
     @GetMapping(value = "hello", produces = MediaType.APPLICATION_JSON_VALUE)
     @Async
-    public String hello() {
+    public CompletableFuture<String> hello() {
 
         //As authentication object is stored in security context we can access it now
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        return "Hello!" + authentication.getName();
+        return CompletableFuture.completedFuture("Hello!" + authentication.getName());
     }
 
 //    Security context is tightly linked on the thread that called it. So, By default if other
