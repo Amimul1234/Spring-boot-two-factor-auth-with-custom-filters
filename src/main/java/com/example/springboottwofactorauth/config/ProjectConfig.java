@@ -5,6 +5,7 @@ import com.example.springboottwofactorauth.security.filter.UserNamePasswordAuthF
 import com.example.springboottwofactorauth.security.providers.OtpAuthProvider;
 import com.example.springboottwofactorauth.security.providers.TokenAuthProvider;
 import com.example.springboottwofactorauth.security.providers.UserNamePasswordAuthProvider;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -67,5 +69,13 @@ public class ProjectConfig extends WebSecurityConfigurerAdapter {
         http
                 .addFilterAt(userNamePasswordAuthFilter, BasicAuthenticationFilter.class)
                 .addFilterAfter(tokenAuthFilter, BasicAuthenticationFilter.class);
+    }
+
+    //Change security context holder strategy
+    @Bean
+    public InitializingBean initializingBean() {
+        return () -> SecurityContextHolder.setStrategyName(
+                SecurityContextHolder.MODE_INHERITABLETHREADLOCAL
+        );
     }
 }
